@@ -1,0 +1,104 @@
+// note: in this programs current state, child objects for the player object must be made named 'wallCheckLeft' and 'wallCheckRight' and moved to the left and right of the players hitbox.
+// alternitively, triggers can be placed on walls which, assuming the code is functional, would also allow you to wall jump, assuming you gave the wall a 'Wall' tag (NOT IDEAL, USE CHILD OBJECTS INSTEAD)
+// the 'IsTouchingWall' command should be tested to see if a Physics2D.OverlapBox could be used instead, as it would probably work better.
+// in this program's current state, it is unsure whether either of the wall jump codes work, and it is definetly sure the boost code doesn't work, as I don't know how to check if the player is holding the left shift key
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Move : MonoBehaviour
+{
+// sets all floats and bools the program needs
+    private float horizontal;
+    private float speed = 8f;
+    private float jumpingPower = 16f;
+    private float boostPower = 64f;
+    private float wallJumpCounter = 0f;
+    private bool isFacingRight = true;
+    private bool doubleJump = false;
+
+// I believe this gives the program access to components outside of the program, like layers, rigidbodies, and other objects
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private Transform wallCheckLeft;
+    [SerializeField] private Transform wallCheckRight;
+    [SerializeField] private LayerMask groundLayer;
+
+    // Update is called once per frame
+    void Update()
+    {
+        horizontal = Input.GetAxisRaw("Horizontal");
+// sets variables / bools upon touching the ground
+        if (IsGrounded())
+        {
+            doubleJump = true;
+            wallJumpCounter = 0;
+        }
+
+// a test to see if wall jumps can be done with overlapping circle collisions using a child of the player object, to avoid from putting walljump triggers on every wall in the game (WIP)
+        bool IsTouchingWall()
+        {
+            return (Physics2D.OverlapCircle(wallCheckLeft.position, 0.2f, groundLayer) || (Physics2D.OverlapCircle(wallCheckRight.position, 0.2f, groundLayer)));
+        }
+
+// allows the player to jump if the user is pressing the space bar and the player character is touching the ground
+        if (Input.GetButtonDown("Jump") && IsGrounded())
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+        }
+
+// causes the player to jump a shorter distance if they let go of the space bar when jumping
+        if (Input.GetButtonUp("Jump") && rb.velocity.y > 0f)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.5f);
+        }
+
+// calls the flip command
+        Flip();
+
+// allows the player to boost jump if they otherwise had the ability to jump (currently excluding wall jumps) (WIP, not currently functional)
+        if ((Input.GetButtonDown("Jump") && (IsGrounded() || doubleJump == true) && (Input.GetKeyDown(KeyCode.LeftShift))))
+        {
+            if (IsGrounded() == false)
+            {
+                doubleJump = false;
+            }
+            rb.velocity = new Vector2(rb.velocity.x + boostPower, rb.velocity.y);
+        }
+
+// allows the player to double jump mid air assuming they haven't already jumped in the air, and that they're not actively touching a wall to avoid double jumps from being used at the same times as wall jumps
+        if ((Input.GetButtonDown("Jump") && (doubleJump == true) && (IsGrounded() == false) && (IsTouchingWall() == false)))
+        {
+            doubleJump = false;
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+        }
+
+// allows player to wall jump, assuming they haven't run out of stamina, which occurs after 'wallJumpCounter' wallj jumps (curretly set to 5 wall jumps)
+        if ((Input.GetButtonDown("Jump") && (IsTouchingWall()) && (wallJumpCounter <= 5) && (IsGrounded() == false)))
+        {
+            // walljumpCounter += 1;
+            rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
+        }
+    }
+
+// allows the player to move left and right using the a or d key
+    private void FixedUpdate()
+    {
+        rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
+    }
+
+    private bool IsGrounded()
+    {
+        return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
+    }
+    private void Flip()
+    {
+        if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
+        {
+            isFacingRight = !isFacingRight;
+            Vector3 localScale = transform.localScale;
+            localScale.x *= -1f;
+            transform.localScale = localScale;
+        }
+    }
+}
