@@ -1,0 +1,27 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class respawn : MonoBehaviour
+{
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Transform playerHitbox;
+    private bool dead = false;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        if (Physics2D.OverlapBox(playerHitbox.position.x, playerHitbox.position.y))
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+    void OnCollisionEnter (rb, spikeLayer)
+    {
+        dead = true;
+    }
+
+}
