@@ -1,0 +1,58 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+
+public class Death_Detection : MonoBehaviour
+{
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Transform respawn;
+
+    private GameObject current_respawn_trigger;
+    private float last_respawn_trigger = 0;
+    //used to find which respawn point to teleport the player respawn to
+    private float b = 1;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    //teleports player to respawn position. Other parts of this function move said loction around to other respawn points, but essentially it's just the one being moved around.
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "spike")
+        {
+            rb.transform.position = respawn.position;
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+       if (collision.gameObject.tag == "respawn trigger")
+        {
+            current_respawn_trigger = collision.gameObject;
+            
+            current_respawn_trigger.SetActive(false);
+
+            string current_respawn_trigger_string = current_respawn_trigger.name[current_respawn_trigger.name.Length - 1].ToString();
+
+            float current_respawn_trigger_num = float.Parse(current_respawn_trigger_string);
+            
+            if (last_respawn_trigger < current_respawn_trigger_num)
+                respawn.transform.position = GameObject.Find("respawn " + collision.gameObject.name[collision.gameObject.name.Length - 1]).transform.position;
+                b += 1;
+
+                string last_respawn_trigger_string = current_respawn_trigger.name[current_respawn_trigger.name.Length - 1].ToString();
+
+                last_respawn_trigger_num = float.Parse(last_respawn_trigger_string);
+        }
+    }
+}
