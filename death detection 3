@@ -1,0 +1,50 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
+using UnityEngine;
+
+
+public class Death_Detection : MonoBehaviour
+{
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Transform respawn;
+
+    private GameObject current_respawn_trigger;
+    //used to find which respawn point to teleport the player respawn to
+    private float b = 1;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    //teleports player to respawn position. Other parts of this function move said loction around to other respawn points, but essentially it's just the one being moved around.
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "spike")
+        {
+            rb.transform.position = respawn.position;
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+       if (collision.gameObject.tag == "respawn trigger")
+        {
+            current_respawn_trigger = collision.gameObject;
+            
+            current_respawn_trigger.SetActive(false);
+            
+            respawn.transform.position = GameObject.Find("respawn " + b.ToString()).transform.position;
+            b += 1;
+        }
+    }
+}
